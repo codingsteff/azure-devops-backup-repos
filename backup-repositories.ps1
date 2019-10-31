@@ -25,7 +25,7 @@ function backup-repo($project, $repo) {
 }
 
 if (-Not (Test-Path $downloadLocation)) {
-    New-Item -Name $downloadLocation -ItemType Directory
+    New-Item -Name $downloadLocation -ItemType Directory | Out-Null
 }
 $location = Get-Location
 Set-Location $downloadLocation
@@ -37,7 +37,7 @@ foreach ($project in $projects) {
     if ($hasMultiRepos) {
         $existFolder = (Test-Path $project.name)
         if (-Not $existFolder) {
-            New-Item -Name $project.name -ItemType Directory
+            New-Item -Name $project.name -ItemType Directory | Out-Null
         }
         Set-Location $project.name
         foreach ($repo in $repos) {
