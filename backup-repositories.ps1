@@ -1,4 +1,4 @@
-param([string] $organization, [string]$downloadLocation)
+param([string] $organization, [string]$downloadLocation, [string]$personalAccessToken)
 
 function get-projects {
     return (az devops project list -o json | ConvertFrom-Json) | Sort-Object name
@@ -17,7 +17,8 @@ function backup-repo($project, $repo) {
         $cmd = "git -C $repoName pull"
     }
     else {
-        $cmd = "git clone https://$organization@dev.azure.com/$organization/$projectName/_git/$repoName $repoName"
+        if ($personalAccessToken) { $token = ":$personalAccessToken" }        
+        $cmd = "git clone https://$organization$token@dev.azure.com/$organization/$projectName/_git/$repoName $repoName"
     }
     Write-Host "      " $cmd
     Invoke-Expression $cmd

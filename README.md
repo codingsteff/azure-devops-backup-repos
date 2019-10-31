@@ -6,12 +6,18 @@ Get all Azure DevOps git repositories with help of git clone or pull
 
 [Azure DevOps Extension for Azure CL](https://github.com/Azure/azure-devops-cli-extension)
 
-    # login interactive
-    az login
+```sh
+# login interactive
+az devops login
 
-    # login with Personal Access Token
-    az devops login --organization https://dev.azure.com/[ORGANIZATION]
+# login with Personal Access Token
+az devops login --organization https://dev.azure.com/[ORGANIZATION]
+```
 
 ## Usage
 
-     .\backup-repositories.ps1 "organization" "c:\repos"
+```sh
+.\backup-repositories.ps1 "organization" "/repos" "[personal-access-token]"
+```
+
+Personal access token is optional, otherwise it uses system configured git credentials.
