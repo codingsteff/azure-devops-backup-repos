@@ -20,4 +20,4 @@ az devops login --organization https://dev.azure.com/[ORGANIZATION]
 .\backup-repositories.ps1 "organization" "/repos" "[personal-access-token]"
 ```
 
-Personal access token is optional, otherwise it uses system configured git credentials.
+*Personal access token is optional, otherwise it uses system configured git credentials.*
