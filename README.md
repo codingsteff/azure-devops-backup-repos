@@ -1,6 +1,6 @@
 # Azure DevOps - Backup Repositories
 
-Get all Azure DevOps git repositories with help of git clone or pull
+Downloads all Azure DevOps git repositories with use of git clone or pull
 
 ## Requirements
 
@@ -17,7 +17,7 @@ az devops login --organization https://dev.azure.com/[ORGANIZATION]
 ## Usage
 
 ```sh
-.\backup-repositories.ps1 "organization" "/repos" "[personal-access-token]"
+.\backup-repos.ps1 "organization" "/repos" "[personal-access-token]"
 ```
 
 *Personal access token is optional, otherwise it uses system configured git credentials.*
