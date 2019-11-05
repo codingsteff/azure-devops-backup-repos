@@ -2,8 +2,8 @@ FROM mcr.microsoft.com/powershell
 
 # Install prerequisites
 RUN apt-get update && apt-get install -y \
-curl \
-git
+    curl \
+    git
 
 # Install Azure CLI
 # https://docs.microsoft.com/en-us/cli/azure/install-azure-cli-apt?view=azure-cli-latest
