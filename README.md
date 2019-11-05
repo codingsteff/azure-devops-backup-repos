@@ -29,7 +29,7 @@ docker run /
 -e AZURE_DEVOPS_EXT_ORG=contoso /
 -e AZURE_DEVOPS_EXT_PAT=xxxxxxxx /
 -v /repos:/repos /
-azure-devops-backup-repos
+codingsteff/azure-devops-backup-repos
 ```
 
 ## Dev
