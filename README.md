@@ -1,6 +1,6 @@
 # Azure DevOps - Backup Repositories
 
-Powershell script to download all Azure DevOps git repositories with use of git clone or pull
+Powershell script to download all Azure DevOps git repositories with use of git clone or pull.
 
 ## Requirements
 
