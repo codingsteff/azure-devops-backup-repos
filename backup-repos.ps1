@@ -15,14 +15,23 @@ function backup-repo($project, $repo) {
     $existProject = Test-Path $repoName
     if ($existProject) {
         $cmd = "git -C $repoName pull"
+        Write-Host "      " $cmd
     }
-    else {
-        if ($personalAccessToken) { $token = ":$personalAccessToken" }        
-        $cmd = "git clone https://$organization$token@dev.azure.com/$organization/$projectName/_git/$repoName $repoName"
+    else {          
+        $cmd = "git clone https://$organization@dev.azure.com/$organization/$projectName/_git/$repoName $repoName"
+        Write-Host "      " $cmd
+        $cmd = add-token $cmd $personalAccessToken
     }
-    Write-Host "      " $cmd
     Invoke-Expression $cmd
     Write-Host ""
+}
+
+function add-token($url, $token) {
+    if ($token) {
+        $delimiter = $url.indexOf("@")
+        $url = $url.Substring(0, $delimiter - 1) + ":$token" + $url.Substring($delimiter)
+    }
+    return $url
 }
 
 if (-Not (Test-Path $downloadLocation)) {
