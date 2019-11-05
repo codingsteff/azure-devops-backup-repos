@@ -1,6 +1,6 @@
 # Azure DevOps - Backup Repositories
 
-Downloads all Azure DevOps git repositories with use of git clone or pull
+Powershell script to download all Azure DevOps git repositories with use of git clone or pull
 
 ## Requirements
 
@@ -21,3 +21,19 @@ az devops login --organization https://dev.azure.com/[ORGANIZATION]
 ```
 
 *Personal access token is optional, otherwise it uses system configured git credentials.*
+
+## Run as docker container
+
+```sh
+docker run /
+-e AZURE_DEVOPS_EXT_ORG=contoso /
+-e AZURE_DEVOPS_EXT_PAT=xxxxxxxx /
+-v /repos:/repos /
+azure-devops-backup-repos
+```
+
+### Build docker container
+
+```sh
+docker build -t azure-devops-backup-repos .
+```
