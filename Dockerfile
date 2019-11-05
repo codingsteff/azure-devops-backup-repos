@@ -16,4 +16,5 @@ RUN az extension add --name azure-devops
 COPY backup-repos.ps1 /
 
 COPY run.sh /usr/local/bin/
+RUN chmod +x /usr/local/bin/run.sh 
 CMD ["run.sh"]
