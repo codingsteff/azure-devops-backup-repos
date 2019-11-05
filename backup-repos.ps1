@@ -11,17 +11,17 @@ function get-repos($project) {
 function backup-repo($project, $repo) {
     $repoName = $repo.name
     $projectName = $project.name
+    $url = "https://$organization@dev.azure.com/$organization/$projectName/_git/$repoName"
     Write-Host "   " $repoName
     $existProject = Test-Path $repoName
     if ($existProject) {
-        $cmd = "git -C $repoName pull"
-        Write-Host "      " $cmd
+        $cmd = "git -C $repoName pull $url"
     }
     else {          
-        $cmd = "git clone https://$organization@dev.azure.com/$organization/$projectName/_git/$repoName $repoName"
-        Write-Host "      " $cmd
-        $cmd = add-token $cmd $personalAccessToken
+        $cmd = "git clone $url $repoName"
     }
+    Write-Host "      " $cmd
+    $cmd = add-token $cmd $personalAccessToken
     Invoke-Expression $cmd
     Write-Host ""
 }
@@ -29,7 +29,7 @@ function backup-repo($project, $repo) {
 function add-token($url, $token) {
     if ($token) {
         $delimiter = $url.indexOf("@")
-        $url = $url.Substring(0, $delimiter - 1) + ":$token" + $url.Substring($delimiter)
+        $url = $url.Substring(0, $delimiter) + ":$token" + $url.Substring($delimiter)
     }
     return $url
 }
