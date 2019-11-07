@@ -34,8 +34,21 @@ codingsteff/azure-devops-backup-repos
 
 ## Dev
 
-### Build docker container
+### Build local docker container
 
 ```sh
 docker build -t azure-devops-backup-repos .
 ```
+
+## Docker hub
+
+### Build Rules
+
+| Type   | Source                             | Docker Tag                      |
+| ------ | ---------------------------------- | ------------------------------- |
+| Branch | `master`                           | `latest`                        |
+| Tag    | `/([0-9]+)?(\.[0-9]+)?(\.[0-9]+)/` | `{\1}`,`{\1}{\2}`,`{sourceref}` |
+
+Multiple docker tags: *Regex with capture groups {\1} for major, {\2} for minor, {soureref} for full tag name*
+
+[Regexes and automated builds](https://docs.docker.com/docker-hub/builds/#regexes-and-automated-builds)
