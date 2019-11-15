@@ -4,7 +4,7 @@ Powershell script to download all Azure DevOps git repositories with use of git 
 
 ## Requirements
 
-[Azure DevOps Extension for Azure CL](https://github.com/Azure/azure-devops-cli-extension)
+[Azure DevOps Extension for Azure CLI](https://github.com/Azure/azure-devops-cli-extension)
 
 ```sh
 # login interactive
