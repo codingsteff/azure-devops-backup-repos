@@ -1,14 +1,14 @@
 param([string] $organization, [string]$downloadLocation, [string]$personalAccessToken)
 
-function get-projects {
+function Get-Projects {
     return (az devops project list -o json | ConvertFrom-Json) | Sort-Object name
 }
 
-function get-repos($project) {
+function Get-Repos($project) {
     return (az repos list --project $project.name -o json | ConvertFrom-Json) | Sort-Object name
 }
 
-function add-token($url, $token) {
+function Add-Token($url, $token) {
     if ($token) {
         $delimiter = $url.indexOf("@")
         $url = $url.Substring(0, $delimiter) + ":$token" + $url.Substring($delimiter)
@@ -16,7 +16,7 @@ function add-token($url, $token) {
     return $url
 }
 
-function backup-repo($project, $repo) {
+function Backup-Repo($project, $repo) {
     $repoName = $repo.name
     $projectName = $project.name
     $url = "https://$organization@dev.azure.com/$organization/$projectName/_git/$repoName"
@@ -29,16 +29,16 @@ function backup-repo($project, $repo) {
         $cmd = "git clone $url $repoName"
     }
     Write-Host "      " $cmd
-    $cmd = add-token $cmd $personalAccessToken
+    $cmd = Add-Token $cmd $personalAccessToken
     Invoke-Expression $cmd
     Write-Host ""
 }
 
-function backup-repos() {
-    $projects = get-projects
+function Backup-Repos() {
+    $projects = Get-Projects
     foreach ($project in $projects) {
         Write-Host $project.name
-        $repos = get-repos($project)
+        $repos = Get-Repos($project)
         $hasMultiRepos = $repos.Length -gt 1
         if ($hasMultiRepos) {
             # Activate chain operator as soon as Powershell 7 GA
@@ -49,13 +49,13 @@ function backup-repos() {
             }
             Set-Location $project.name
             foreach ($repo in $repos) {
-                backup-repo $project $repo
+                Backup-Repo $project $repo
             }
             Set-Location ..
         }
         else {
             $repo = $repos[0]        
-            backup-repo $project $repo
+            Backup-Repo $project $repo
         }
     }
 }
@@ -67,6 +67,6 @@ if (-Not (Test-Path $downloadLocation)) {
     New-Item -Name $downloadLocation -ItemType Directory | Out-Null
 } 
 Set-Location $downloadLocation
-backup-repos
+Backup-Repo
 
 Set-Location $location
