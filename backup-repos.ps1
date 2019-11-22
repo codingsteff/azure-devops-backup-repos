@@ -8,6 +8,14 @@ function get-repos($project) {
     return (az repos list --project $project.name -o json | ConvertFrom-Json) | Sort-Object name
 }
 
+function add-token($url, $token) {
+    if ($token) {
+        $delimiter = $url.indexOf("@")
+        $url = $url.Substring(0, $delimiter) + ":$token" + $url.Substring($delimiter)
+    }
+    return $url
+}
+
 function backup-repo($project, $repo) {
     $repoName = $repo.name
     $projectName = $project.name
@@ -24,14 +32,6 @@ function backup-repo($project, $repo) {
     $cmd = add-token $cmd $personalAccessToken
     Invoke-Expression $cmd
     Write-Host ""
-}
-
-function add-token($url, $token) {
-    if ($token) {
-        $delimiter = $url.indexOf("@")
-        $url = $url.Substring(0, $delimiter) + ":$token" + $url.Substring($delimiter)
-    }
-    return $url
 }
 
 # Activate chain operator as soon as Powershell 7 GA
