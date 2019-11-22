@@ -67,6 +67,6 @@ if (-Not (Test-Path $downloadLocation)) {
     New-Item -Name $downloadLocation -ItemType Directory | Out-Null
 } 
 Set-Location $downloadLocation
-Backup-Repo
+Backup-Repos
 
 Set-Location $location
