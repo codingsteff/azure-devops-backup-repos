@@ -34,6 +34,8 @@ function add-token($url, $token) {
     return $url
 }
 
+# Activate chain operator as soon as Powershell 7 GA
+#Test-Path $downloadLocation || New-Item -Name $downloadLocation -ItemType Directory
 if (-Not (Test-Path $downloadLocation)) {
     New-Item -Name $downloadLocation -ItemType Directory | Out-Null
 }
@@ -45,6 +47,8 @@ foreach ($project in $projects) {
     $repos = get-repos($project)
     $hasMultiRepos = $repos.Length -gt 1
     if ($hasMultiRepos) {
+        # Activate chain operator as soon as Powershell 7 GA
+        #Test-Path $project.name || New-Item -Name $project.name -ItemType Directory
         $existFolder = (Test-Path $project.name)
         if (-Not $existFolder) {
             New-Item -Name $project.name -ItemType Directory | Out-Null
