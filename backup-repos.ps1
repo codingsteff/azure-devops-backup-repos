@@ -34,34 +34,39 @@ function backup-repo($project, $repo) {
     Write-Host ""
 }
 
+function backup-repos() {
+    $projects = get-projects
+    foreach ($project in $projects) {
+        Write-Host $project.name
+        $repos = get-repos($project)
+        $hasMultiRepos = $repos.Length -gt 1
+        if ($hasMultiRepos) {
+            # Activate chain operator as soon as Powershell 7 GA
+            #Test-Path $project.name || New-Item -Name $project.name -ItemType Directory
+            $existFolder = (Test-Path $project.name)
+            if (-Not $existFolder) {
+                New-Item -Name $project.name -ItemType Directory | Out-Null
+            }
+            Set-Location $project.name
+            foreach ($repo in $repos) {
+                backup-repo $project $repo
+            }
+            Set-Location ..
+        }
+        else {
+            $repo = $repos[0]        
+            backup-repo $project $repo
+        }
+    }
+}
+
+$location = Get-Location
 # Activate chain operator as soon as Powershell 7 GA
 #Test-Path $downloadLocation || New-Item -Name $downloadLocation -ItemType Directory
 if (-Not (Test-Path $downloadLocation)) {
     New-Item -Name $downloadLocation -ItemType Directory | Out-Null
-}
-$location = Get-Location
+} 
 Set-Location $downloadLocation
-$projects = get-projects
-foreach ($project in $projects) {
-    Write-Host $project.name
-    $repos = get-repos($project)
-    $hasMultiRepos = $repos.Length -gt 1
-    if ($hasMultiRepos) {
-        # Activate chain operator as soon as Powershell 7 GA
-        #Test-Path $project.name || New-Item -Name $project.name -ItemType Directory
-        $existFolder = (Test-Path $project.name)
-        if (-Not $existFolder) {
-            New-Item -Name $project.name -ItemType Directory | Out-Null
-        }
-        Set-Location $project.name
-        foreach ($repo in $repos) {
-            backup-repo $project $repo
-        }
-        Set-Location ..
-    }
-    else {
-        $repo = $repos[0]        
-        backup-repo $project $repo
-    }
-}
+backup-repos
+
 Set-Location $location
