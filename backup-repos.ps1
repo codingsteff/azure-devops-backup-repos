@@ -23,6 +23,7 @@ function Backup-Repo($project, $repo) {
     Write-Host "   " $repoName
     $existProject = Test-Path $repoName
     if ($existProject) {
+        # Invoke-Expression "git remote prune origin"
         $cmd = "git -C $repoName pull $url"
     }
     else {          
@@ -41,12 +42,7 @@ function Backup-Repos() {
         $repos = Get-Repos($project)
         $hasMultiRepos = $repos.Length -gt 1
         if ($hasMultiRepos) {
-            # Activate chain operator as soon as Powershell 7 GA
-            #Test-Path $project.name || New-Item -Name $project.name -ItemType Directory
-            $existFolder = (Test-Path $project.name)
-            if (-Not $existFolder) {
-                New-Item -Name $project.name -ItemType Directory | Out-Null
-            }
+            Test-Path $project.name || New-Item -Name $project.name -ItemType Directory | Out-Null
             Set-Location $project.name
             foreach ($repo in $repos) {
                 Backup-Repo $project $repo
@@ -61,11 +57,7 @@ function Backup-Repos() {
 }
 
 $location = Get-Location
-# Activate chain operator as soon as Powershell 7 GA
-#Test-Path $downloadLocation || New-Item -Name $downloadLocation -ItemType Directory
-if (-Not (Test-Path $downloadLocation)) {
-    New-Item -Name $downloadLocation -ItemType Directory | Out-Null
-} 
+Test-Path $downloadLocation | Out-Null || New-Item -Name $downloadLocation -ItemType Directory | Out-Null
 Set-Location $downloadLocation
 Backup-Repos
 
