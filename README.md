@@ -51,7 +51,7 @@ git push origin --tags
 
 ### Build Rules
 
-| Type   | Source                             | Docker Tag                      |
+| Type   | Source becomes =>                  | Docker Tag                      |
 | ------ | ---------------------------------- | ------------------------------- |
 | Branch | `master`                           | `latest`                        |
 | Tag    | `/([0-9]+)?(\.[0-9]+)?(\.[0-9]+)/` | `{\1}`,`{\1}{\2}`,`{sourceref}` |
