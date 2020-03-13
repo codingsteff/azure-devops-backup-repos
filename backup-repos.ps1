@@ -1,7 +1,8 @@
 param([string] $organization, [string]$downloadLocation, [string]$personalAccessToken)
 
 function Get-Projects {
-    return (az devops project list -o json | ConvertFrom-Json) | Sort-Object name
+    # Workaround: .value from ConvertFrom-Json, else it returs continuationToken+value?? 
+    return (az devops project list -o json | ConvertFrom-Json).value | Sort-Object name
 }
 
 function Get-Repos($project) {
