@@ -40,8 +40,10 @@ function Backup-Repos() {
     foreach ($project in $projects) {
         Write-Host $project.name
         $repos = Get-Repos($project)
-        $hasMultiRepos = $repos.Length -gt 1
-        if ($hasMultiRepos) {
+        if ($repso.Length -eq 0) {
+            Write-Host 'No repos!'
+        }
+        elseif ($repos.Length -gt 1) {
             Test-Path $project.name || New-Item -Name $project.name -ItemType Directory | Out-Null
             Set-Location $project.name
             foreach ($repo in $repos) {
