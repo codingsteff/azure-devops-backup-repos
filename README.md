@@ -37,7 +37,7 @@ codingsteff/azure-devops-backup-repos
 ### Build local docker container
 
 ```sh
-docker build -t azure-devops-backup-repos .
+docker build --pull -t azure-devops-backup-repos .
 ```
 
 ## Docker hub
