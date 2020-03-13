@@ -40,6 +40,13 @@ codingsteff/azure-devops-backup-repos
 docker build --pull -t azure-devops-backup-repos .
 ```
 
+### Create Tags
+
+```sh
+git tag 1.0.x
+git push origin --tags
+```
+
 ## Docker hub
 
 ### Build Rules
