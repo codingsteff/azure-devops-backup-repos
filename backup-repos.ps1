@@ -52,6 +52,9 @@ function Backup-Repos() {
         }
         elseif ($repos.Length -gt 1) {
             Add-Directory $project.name
+            # TODO: Remove ugly Set-Locations
+            # Problem 1: git pull on sub directory
+            # Problem 2: invoke-expression alternative?
             Set-Location $project.name
             foreach ($repo in $repos) {
                 Backup-Repo $project $repo
