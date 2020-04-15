@@ -17,6 +17,12 @@ function Add-Token($url, $token) {
     return $url
 }
 
+function Add-Directory($directory) {
+    if (!(Test-Path -path $directory)) {
+        New-Item $directory -ItemType Directory | Out-Null
+    }
+}
+
 function Backup-Repo($project, $repo) {
     $repoName = $repo.name
     $projectName = $project.name
@@ -60,7 +66,7 @@ function Backup-Repos() {
 }
 
 $location = Get-Location
-Test-Path $downloadLocation | Out-Null || New-Item $downloadLocation -ItemType Directory | Out-Null
+Add-Directory $downloadLocation
 Set-Location $downloadLocation
 Backup-Repos
 
