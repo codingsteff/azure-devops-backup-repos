@@ -51,7 +51,7 @@ function Backup-Repos() {
             Write-Host 'No repos!'
         }
         elseif ($repos.Length -gt 1) {
-            Test-Path $project.name || New-Item $project.name -ItemType Directory | Out-Null
+            Add-Directory $project.name
             Set-Location $project.name
             foreach ($repo in $repos) {
                 Backup-Repo $project $repo
