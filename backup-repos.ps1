@@ -55,6 +55,7 @@ function Backup-Repos() {
             # TODO: Remove ugly Set-Locations
             # Problem 1: git pull on sub directory
             # Problem 2: invoke-expression alternative?
+            # Improvements: if problems away, then use -parallel foreach
             Set-Location $project.name
             foreach ($repo in $repos) {
                 Backup-Repo $project $repo
