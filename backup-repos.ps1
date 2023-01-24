@@ -6,7 +6,7 @@ function Get-Projects {
 }
 
 function Get-Repos($project) {
-    return (az repos list --project $project.name -o json | ConvertFrom-Json) | Sort-Object name
+    return (az repos list --project $project.id -o json | ConvertFrom-Json) | Sort-Object name
 }
 
 function Add-Token($url, $token) {
@@ -26,7 +26,7 @@ function Add-Directory($directory) {
 function Backup-Repo($project, $repo) {
     $repoName = $repo.name
     $projectName = $project.name
-    $url = "https://$organization@dev.azure.com/$organization/$projectName/_git/$repoName"
+    $url = $repo.remoteUrl
     Write-Host "   " $repoName
     $existProject = Test-Path $repoName
     if ($existProject) {
