@@ -28,18 +28,40 @@ function Backup-Repo($project, $repo) {
     $projectName = $project.name
     $url = $repo.remoteUrl
     Write-Host "   " $repoName
-    $existProject = Test-Path $repoName
-    if ($existProject) {
-        # Invoke-Expression "git remote prune origin"
-        $cmd = "git -C $repoName pull $url"
+
+    $existRepo = Test-Path $repoName
+    if (!($existRepo)) {
+        Add-Directory $repoName
     }
-    else {          
-        $cmd = "git clone $url $repoName"
-    }
-    Write-Host "      " $cmd
+    Set-Location -Path $repoName
+
+    # List branch refs
+    $cmd = "git ls-remote --heads $url"
+    Write-Host "      $cmd"
     $cmd = Add-Token $cmd $personalAccessToken
-    Invoke-Expression $cmd
+    $refs = Invoke-Expression $cmd
     Write-Host ""
+
+    # Extract branch names
+    $branches = $refs | ForEach-Object { ($_ -split "\s+")[1] -replace "^refs/heads/", "" }
+    
+    # Clone each branch into its own folder
+    foreach ($branch in $branches) {
+        # Replace all punctuation (except letters, numbers, and underscore) with "_"
+        $branchDir = "$branch" -replace '[^\w]', '_'
+
+        $existBranch = Test-Path $branchDir
+        if ($existBranch) {
+            $cmd = "git -C $repoName clone --single-branch --branch $branch $url '$branchDir'"
+        }
+        else {          
+            $cmd = "git clone --single-branch --branch $branch $url '$branchDir'"
+        }
+        Write-Host "      $cmd"
+        $cmd = Add-Token $cmd $personalAccessToken
+        Invoke-Expression $cmd
+        Write-Host ""
+    }
 }
 
 function Backup-Repos() {
