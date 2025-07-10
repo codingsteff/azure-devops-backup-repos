@@ -16,8 +16,31 @@ az devops login --organization https://dev.azure.com/[ORGANIZATION]
 
 ## Usage
 
+### Back up main / master branch only
 ```sh
-.\backup-repos.ps1 "organization" "/repos" "[personal-access-token]"
+.\backup-repos.ps1 
+    -organization "organization"
+    -downloadLocation "/repos"
+    -personalAccessToken "[personal-access-token]"
+```
+
+### Back up all branches
+```sh
+.\backup-repos.ps1 
+    -organization "organization"
+    -downloadLocation "/repos"
+    -personalAccessToken "[personal-access-token]"
+    -backupAllBranches
+```
+
+### Back up specific branches based on regex pattern (e.g. only main and any release/ branches.)
+```sh
+.\backup-repos.ps1 
+    -organization "organization"
+    -downloadLocation "/repos"
+    -personalAccessToken "[personal-access-token]"
+    -backupAllBranches
+    -branchNameRegex "^main$|^release\/"
 ```
 
 *Personal access token is optional, otherwise it uses system configured git credentials.*

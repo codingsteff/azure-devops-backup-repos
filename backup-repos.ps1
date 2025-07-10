@@ -1,4 +1,10 @@
-param([string] $organization, [string]$downloadLocation, [string]$personalAccessToken)
+param(
+    [string]$organization,
+    [string]$downloadLocation,
+    [string]$personalAccessToken,
+    [switch]$backupAllBranches,
+    [string]$branchNameRegex = ".*" # Default: matches all branches
+)
 
 function Get-Projects {
     # Workaround: .value from ConvertFrom-Json, else it returs continuationToken+value?? 
@@ -23,44 +29,75 @@ function Add-Directory($directory) {
     }
 }
 
+function Invoke-AuthenticatedGitCommand($command, $token) {
+    Write-Host "      " $command
+    $tokenizedCommand = Add-Token $command $token
+    $result = Invoke-Expression $tokenizedCommand
+    Write-Host ""
+    return $result
+}
+
 function Backup-Repo($project, $repo) {
     $repoName = $repo.name
     $projectName = $project.name
     $url = $repo.remoteUrl
     Write-Host "   " $repoName
-
     $existRepo = Test-Path $repoName
-    if (!($existRepo)) {
-        Add-Directory $repoName
+
+    if ($backupAllBranches) {
+        # Back up all branches
+        if (!($existRepo)) {
+            Add-Directory $repoName
+        }
+        # Save current directory to return to it later
+        $currentDir = Get-Location
+        try {
+            Set-Location -Path $repoName
+
+            # List branch refs
+            $cmd = "git ls-remote --heads $url"
+            $refs = Invoke-AuthenticatedGitCommand $cmd $personalAccessToken
+
+            # Extract branch names and filter based on the provided regex pattern
+            $branches = $refs |
+                ForEach-Object { ($_ -split "\s+")[1] -replace "^refs/heads/", "" } |
+                Where-Object { $_ -match $branchNameRegex }
+
+            if (-not $branches) {
+                Write-Warning "      No branches matched the filter '$branchNameRegex'."
+                return
+            }
+            
+            # Clone each branch into its own folder
+            foreach ($branch in $branches) {
+                # Replace all punctuation (except letters, numbers, and underscore) with "_"
+                $branchDir = "$branch" -replace '[^\w]', '_'
+
+                $existBranch = Test-Path $branchDir
+                if ($existBranch) {
+                    $cmd = "git -C $branchDir clone --single-branch --branch $branch $url '$branchDir'"
+                }
+                else {          
+                    $cmd = "git clone --single-branch --branch $branch $url '$branchDir'"
+                }
+                Invoke-AuthenticatedGitCommand $cmd $personalAccessToken
+            }
+        }
+        finally {
+                # Always return to previous directory
+                Set-Location $currentDir
+            }
     }
-    Set-Location -Path $repoName
-
-    # List branch refs
-    $cmd = "git ls-remote --heads $url"
-    Write-Host "      $cmd"
-    $cmd = Add-Token $cmd $personalAccessToken
-    $refs = Invoke-Expression $cmd
-    Write-Host ""
-
-    # Extract branch names
-    $branches = $refs | ForEach-Object { ($_ -split "\s+")[1] -replace "^refs/heads/", "" }
-    
-    # Clone each branch into its own folder
-    foreach ($branch in $branches) {
-        # Replace all punctuation (except letters, numbers, and underscore) with "_"
-        $branchDir = "$branch" -replace '[^\w]', '_'
-
-        $existBranch = Test-Path $branchDir
-        if ($existBranch) {
-            $cmd = "git -C $repoName clone --single-branch --branch $branch $url '$branchDir'"
+    else {
+        # Back up main / master branch only
+        if ($existRepo) {
+            # Invoke-Expression "git remote prune origin"
+            $cmd = "git -C $repoName pull $url"
         }
         else {          
-            $cmd = "git clone --single-branch --branch $branch $url '$branchDir'"
+            $cmd = "git clone $url $repoName"
         }
-        Write-Host "      $cmd"
-        $cmd = Add-Token $cmd $personalAccessToken
-        Invoke-Expression $cmd
-        Write-Host ""
+        Invoke-AuthenticatedGitCommand $cmd $personalAccessToken
     }
 }
 
@@ -78,11 +115,19 @@ function Backup-Repos() {
             # Problem 1: git pull on sub directory
             # Problem 2: invoke-expression alternative?
             # Improvements: if problems away, then use -parallel foreach
-            Set-Location $project.name
-            foreach ($repo in $repos) {
-                Backup-Repo $project $repo
+
+            # Save current directory to return to it later
+            $currentDir = Get-Location
+            try {
+                Set-Location $project.name
+                foreach ($repo in $repos) {
+                    Backup-Repo $project $repo
+                }
             }
-            Set-Location ..
+            finally {
+                # Always return to previous directory
+                Set-Location $currentDir
+            }
         }
         else {
             $repo = $repos[0]        
