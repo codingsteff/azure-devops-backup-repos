@@ -86,12 +86,12 @@ function Backup-Repo($project, $repo) {
             }
         }
         finally {
-                # Always return to previous directory
-                Set-Location $currentDir
-            }
+            # Always return to previous directory
+            Set-Location $currentDir
+        }
     }
     else {
-        # Back up main / master branch only
+        # Back up main branch only
         if ($existRepo) {
             # Invoke-Expression "git remote prune origin"
             $cmd = "git -C $repoName pull $url"

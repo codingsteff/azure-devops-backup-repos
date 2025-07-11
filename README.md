@@ -1,6 +1,6 @@
 # Azure DevOps - Backup Repositories
 
-Powershell script to download all Azure DevOps git repositories with use of git clone or pull.
+Powershell Script to download all Azure DevOps Git repositories using Git clone or pull.
 
 ## Requirements
 
@@ -16,7 +16,7 @@ az devops login --organization https://dev.azure.com/[ORGANIZATION]
 
 ## Usage
 
-### Back up main / master branch only
+### Back up main branch only
 ```sh
 .\backup-repos.ps1 
     -organization "organization"
@@ -33,7 +33,7 @@ az devops login --organization https://dev.azure.com/[ORGANIZATION]
     -backupAllBranches
 ```
 
-### Back up specific branches based on regex pattern (e.g. only main and any release/ branches.)
+### Back up specific branches
 ```sh
 .\backup-repos.ps1 
     -organization "organization"
