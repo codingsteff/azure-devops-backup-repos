@@ -88,6 +88,7 @@ function Backup-Repo($project, $repo) {
 function Backup-MainBranch($repo) {
     $repoName = $repo.name
     $url = $repo.remoteUrl    
+    $existRepo = Test-Path $repoName
     if ($existRepo) {
         # Invoke-Expression "git remote prune origin"
         $cmd = "git -C $repoName pull $url"
