@@ -1,4 +1,10 @@
-param([string] $organization, [string]$downloadLocation, [string]$personalAccessToken)
+param(
+    [string]$organization,
+    [string]$downloadLocation,
+    [string]$personalAccessToken,
+    [switch]$backupAllBranches,
+    [string]$branchNameRegex = ".*" # Default: matches all branches
+)
 
 function Get-Projects {
     # Workaround: .value from ConvertFrom-Json, else it returs continuationToken+value?? 
@@ -7,6 +13,18 @@ function Get-Projects {
 
 function Get-Repos($project) {
     return (az repos list --project $project.id -o json | ConvertFrom-Json) | Sort-Object name
+}
+
+function Get-Branches($repo) {
+    # List branch refs
+    $url = $repo.remoteUrl
+    $cmd = "git ls-remote --heads $url"
+    $refs = Invoke-AuthenticatedGitCommand $cmd $personalAccessToken
+
+    # Extract branch names and filter based on the provided regex pattern
+    return $refs |
+    ForEach-Object { ($_ -split "\s+")[1] -replace "^refs/heads/", "" } |
+    Where-Object { $_ -match $branchNameRegex }
 }
 
 function Add-Token($url, $token) {
@@ -23,23 +41,81 @@ function Add-Directory($directory) {
     }
 }
 
+function Invoke-AuthenticatedGitCommand($command, $token) {
+    Write-Host "      " $command
+    $tokenizedCommand = Add-Token $command $token
+    $result = Invoke-Expression $tokenizedCommand
+    Write-Host ""
+    return $result
+}
+
 function Backup-Repo($project, $repo) {
     $repoName = $repo.name
-    $projectName = $project.name
-    $url = $repo.remoteUrl
     Write-Host "   " $repoName
-    $existProject = Test-Path $repoName
-    if ($existProject) {
+
+    if (!$backupAllBranches) {
+        # Back up main branch only
+        Backup-MainBranch $repo
+        return
+    }
+
+    # Back up all branches
+    $existRepo = Test-Path $repoName
+    if (!($existRepo)) {
+        Add-Directory $repoName
+    }
+    # Save current directory to return to it later
+    $currentDir = Get-Location
+    try {
+        Set-Location -Path $repoName
+
+        # Get all branches from repository and matching the regex pattern
+        $branches = Get-Branches $repo            
+        if (-not $branches) {
+            Write-Warning "      No branches matched the filter '$branchNameRegex'."
+            return
+        }
+            
+        # Back up each branch into its own folder
+        Backup-Branches $repo $branches            
+    }
+    finally {
+        # Always return to previous directory
+        Set-Location $currentDir
+    } 
+}
+
+function Backup-MainBranch($repo) {
+    $repoName = $repo.name
+    $url = $repo.remoteUrl    
+    $existRepo = Test-Path $repoName
+    if ($existRepo) {
         # Invoke-Expression "git remote prune origin"
         $cmd = "git -C $repoName pull $url"
     }
     else {          
         $cmd = "git clone $url $repoName"
     }
-    Write-Host "      " $cmd
-    $cmd = Add-Token $cmd $personalAccessToken
-    Invoke-Expression $cmd
-    Write-Host ""
+    Invoke-AuthenticatedGitCommand $cmd $personalAccessToken
+}
+
+function Backup-Branches($repo, $branches) {
+    $url = $repo.remoteUrl
+    foreach ($branch in $branches) {
+        # Replace all punctuation (except letters, numbers, and underscore) with "_"
+        $branchDir = "$branch" -replace '[^\w]', '_'
+
+        $existBranch = Test-Path $branchDir
+        if ($existBranch) {
+            # Fetch changes and update the local branch
+            $cmd = "git -C '$branchDir' pull $url $branch"
+        }
+        else {   
+            # Clone the remote branch into a new directory       
+            $cmd = "git clone --single-branch --branch $branch $url '$branchDir'"
+        }
+        Invoke-AuthenticatedGitCommand $cmd $personalAccessToken
+    }
 }
 
 function Backup-Repos() {
@@ -56,11 +132,19 @@ function Backup-Repos() {
             # Problem 1: git pull on sub directory
             # Problem 2: invoke-expression alternative?
             # Improvements: if problems away, then use -parallel foreach
-            Set-Location $project.name
-            foreach ($repo in $repos) {
-                Backup-Repo $project $repo
+
+            # Save current directory to return to it later
+            $currentDir = Get-Location
+            try {
+                Set-Location $project.name
+                foreach ($repo in $repos) {
+                    Backup-Repo $project $repo
+                }
             }
-            Set-Location ..
+            finally {
+                # Always return to previous directory
+                Set-Location $currentDir
+            }
         }
         else {
             $repo = $repos[0]        
