@@ -75,9 +75,11 @@ function Backup-Repo($project, $repo) {
 
                 $existBranch = Test-Path $branchDir
                 if ($existBranch) {
-                    $cmd = "git -C $branchDir clone --single-branch --branch $branch $url '$branchDir'"
+                    # Fetch changes and update the local branch
+                    $cmd = "git -C '$branchDir' pull $url $branch"
                 }
-                else {          
+                else {   
+                    # Clone the remote branch into a new directory       
                     $cmd = "git clone --single-branch --branch $branch $url '$branchDir'"
                 }
                 Invoke-AuthenticatedGitCommand $cmd $personalAccessToken
